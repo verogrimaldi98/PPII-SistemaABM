@@ -5,7 +5,6 @@ import sqlite3
 
 class User(customtkinter.CTk):
     db_name = 'database.db'  
-
     def __init__(self):
         super().__init__()
 
