@@ -31,7 +31,6 @@ class FormularioBase(customtkinter.CTkToplevel):
         vcmd = (self.register(self.solo_numero), "%P")
 
         self.crear_entradas_formulario(vcmd)
-        self.crear_combobox_estado()
 
         # ----- FRAME BOTONES -----
         self.btn_frame = customtkinter.CTkFrame(self, fg_color="transparent")
@@ -106,6 +105,10 @@ class FormularioBase(customtkinter.CTkToplevel):
         self.box_tipo.grid(row=6, column=1, pady=(0, 10))
         self.box_tipo.set("Seleccionar")
 
+        self.label_estado = customtkinter.CTkLabel(self.frame_formulario, text="Estado:")
+        self.label_estado.grid(row=5, column=0, padx=(20, 10), pady=10)
+        # El resto lo configura cada clase
+    
     def elegir_tipo(self, selection):
         if selection == "Órgano":
             opciones = self.obtener_opciones("organos", "nombre")
@@ -122,9 +125,6 @@ class FormularioBase(customtkinter.CTkToplevel):
             self.label_elemento.grid(row=6, column=2, padx=(20, 10), pady=(0, 10))
             self.box_elemento.grid(row=6, column=3, padx=(0, 20), pady=(0, 10))
             self.box_elemento.set("Seleccionar")
-
-    def crear_combobox_estado(self):
-        raise NotImplementedError("Subclases deben implementar 'crear_combobox_estado'")
 
     def obtener_opciones(self, tabla, columna):
         query = f"SELECT {columna} FROM {tabla}"
@@ -149,10 +149,7 @@ class FormularioDonador(FormularioBase):
         super().__init__(parent, "Agregar Donador")
         self.btn_guardar.configure(command=self.guardar_donador)
 
-    def crear_combobox_estado(self):
         self.opciones_estadoDonador = self.obtener_opciones("estadoDonadores", "nombre")
-        self.label_estado = customtkinter.CTkLabel(self.frame_formulario, text="Estado:")
-        self.label_estado.grid(row=5, column=0, padx=(20, 10), pady=10)
         self.box_estado = customtkinter.CTkComboBox(self.frame_formulario, values=self.opciones_estadoDonador)
         self.box_estado.grid(row=5, column=1, pady=10)
         self.box_estado.set("Seleccionar")
@@ -178,10 +175,7 @@ class FormularioReceptor(FormularioBase):
     def __init__(self, parent):
         super().__init__(parent, "Agregar Receptor")
 
-    def crear_combobox_estado(self):
         opciones_estadoReceptor = self.obtener_opciones("estadoReceptores", "nombre")
-        self.label_estado = customtkinter.CTkLabel(self.frame_formulario, text="Estado:")
-        self.label_estado.grid(row=5, column=0, padx=(20, 10), pady=10)
         self.box_estado = customtkinter.CTkComboBox(self.frame_formulario, values=opciones_estadoReceptor)
         self.box_estado.grid(row=5, column=1, pady=10)
         self.box_estado.set("Seleccionar")
