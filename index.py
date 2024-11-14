@@ -1,5 +1,9 @@
 import customtkinter
 from main import *
+from main import User
+import sqlite3
+
+db_name = 'database.db'  
 
 class IndexWindow(customtkinter.CTk):
     def __init__(self):
@@ -32,7 +36,7 @@ class IndexWindow(customtkinter.CTk):
 
         self.labelcontrasenia = customtkinter.CTkLabel(self.frameEmail, text="Contraseña:", font=("Arial", 14), anchor="w")
         self.labelcontrasenia.grid(row=2, column=0, sticky="w", pady=(10, 0))
-        self.entrycontrasenia = customtkinter.CTkEntry(self.frameEmail, width=200, fg_color="#EEEEEE", border_width=1, text_color="#000000")
+        self.entrycontrasenia = customtkinter.CTkEntry(self.frameEmail, width=200, fg_color="#EEEEEE", border_width=1, text_color="#000000", show="*")
         self.entrycontrasenia.grid(row=3, column=0, pady=(5, 0), sticky="w")
         
         # ----- BOTONES -----
@@ -46,6 +50,21 @@ class IndexWindow(customtkinter.CTk):
             self.destroy()
             vizualizar_registros = UserVisualizador()
             vizualizar_registros.mainloop()
+
+        # def ValidarLogin(self, nombre_usuario, contrasenia):
+        #     with sqlite3.connect(db_name) as conn:
+        #         cursor = conn.cursor()
+        #         query = f"SELECT * FROM usuarios WHERE nombre_usuario == {nombre_usuario} AND contrasenia {contrasenia} "
+        #         cursor.execute(query)
+        #         validacion = cursor.fetchall()
+        #         cursor.close()
+        #     return validacion
+
+        # def iniciar_sesion(self):
+        #     nombre_usuario = self.entryEmail.get()
+        #     for user in ["user_admin", "user_altas"]:
+        #         if user.autenticar(self.username, self.password):
+        #             print("inicio de sesion exitoso.")
 
 if __name__ == '__main__':
     app = IndexWindow()

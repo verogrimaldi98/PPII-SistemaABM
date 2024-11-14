@@ -55,13 +55,6 @@ class User(customtkinter.CTk):
             self.tree_view_receptores = tree_view
             query = ''' SELECT receptores.id, receptores.nombre, receptores.apellido, receptores.dni, receptores.edad, generos.nombre, receptores.telefono, provincias.nombre, estadoReceptores.nombre, instituciones.nombre, tipo.nombre, receptores.elemento_id FROM receptores JOIN generos ON receptores.genero_id = generos.id JOIN provincias ON receptores.provincia_id = provincias.id JOIN estadoReceptores ON receptores.estado_id = estadoReceptores.id JOIN instituciones ON receptores.institucion_id = instituciones.id JOIN tipo ON receptores.tipo_id = tipo.id  '''
             self.get_datos(tree_view, query)
-
-    def run_query(self, query, parameters = ()):
-        with sqlite3.connect(self.db_name) as conn:
-            cursor = conn.cursor()
-            result = cursor.execute(query, parameters)
-            conn.commit()
-        return cursor.fetchall()
     
     def get_datos(self, tree_view, query):
         registros = tree_view.get_children()
@@ -71,7 +64,14 @@ class User(customtkinter.CTk):
         db_rows = self.run_query(query)
         for row in db_rows:
             tree_view.insert("", "end", values=row)
-
+    
+    def run_query(self, query, parameters = ()):
+        with sqlite3.connect(self.db_name) as conn:
+            cursor = conn.cursor()
+            result = cursor.execute(query, parameters)
+            conn.commit()
+        return result
+    
 class UserAdmin(User):
     def __init__(self):
         super().__init__()
