@@ -1,9 +1,12 @@
 import customtkinter
 from tkinter import *
 import sqlite3
+from index import User
+from PIL import Image
 
 class FormularioBase(customtkinter.CTkToplevel):
     db_name = 'database.db'
+    
     def __init__(self, parent, titulo):
         super().__init__(parent)
         
@@ -35,16 +38,18 @@ class FormularioBase(customtkinter.CTkToplevel):
 
         # ----- FRAME BOTONES -----
         self.btn_frame = customtkinter.CTkFrame(self, fg_color="transparent")
-        self.btn_frame.grid(row=6, column=0, columnspan=2, padx=60, pady=(20, 10), sticky="ew")
+        self.btn_frame.grid(row=6, column=0, columnspan=2, padx=60, pady=(20, 10), sticky="nsew")
         self.btn_frame.grid_columnconfigure(0, weight=1)
         self.btn_frame.grid_columnconfigure(1, weight=1)
 
-        self.btn_guardar = customtkinter.CTkButton(self.btn_frame, text="Guardar", command=self.guardar_datos)
-        self.btn_guardar.grid(row=0, column=0, padx=(0, 10))
-        self.btn_limpiar = customtkinter.CTkButton(self.btn_frame, text="Borrar", command=self.limpiar_formulario)
-        self.btn_limpiar.grid(row=0, column=1)
+        trash_icon = customtkinter.CTkImage(Image.open("img/delete-icon.png"), size=(25, 25))
+        self.btn_limpiar = customtkinter.CTkButton(self.btn_frame, text="", image=trash_icon, fg_color="transparent", hover=False, width=25, command=self.limpiar_formulario)
+        self.btn_limpiar.grid(row=0, column=0)
+
+        self.btn_guardar = customtkinter.CTkButton(self.btn_frame, text="Guardar", fg_color="#05ab08", hover_color="#09820d", command=self.guardar_datos)
+        self.btn_guardar.grid(row=0, column=1, padx=(0, 5))
         self.btn_cancelar = customtkinter.CTkButton(self.btn_frame, text="Cancelar", command=self.destroy)
-        self.btn_cancelar.grid(row=0, column=2, padx=(10, 0))
+        self.btn_cancelar.grid(row=0, column=2, padx=(5, 0))
 
     def guardar_datos(self):
         raise NotImplementedError("Subclases deben implementar el método de guardado")
@@ -143,12 +148,13 @@ class FormularioBase(customtkinter.CTkToplevel):
     def solo_numero(self, texto):
         return texto.isdigit() or texto == ""
 
-    def run_query(self, query, parameters=()):
-        with sqlite3.connect(self.db_name, timeout=30) as conn:
+    def run_query(self, query, parameters = ()):
+        with sqlite3.connect(self.db_name) as conn:
             cursor = conn.cursor()
-            cursor.execute(query, parameters)
+            result = cursor.execute(query, parameters)
             conn.commit()
-
+        return result
+    
     def limpiar_formulario(self):
         self.entry_nombre.delete(0, "end")
         self.entry_apellido.delete(0, "end")
@@ -167,7 +173,6 @@ class FormularioDonador(FormularioBase):
         super().__init__(parent, "Agregar Donador")
         self.btn_guardar.configure(command=self.guardar_donantes)
 
-        # Configuración del ComboBox de estadoDonador
         self.opciones_estadoDonador = self.obtener_opciones("estadoDonadores", "nombre")
         self.box_estado = customtkinter.CTkComboBox(self.frame_formulario, values=list(self.opciones_estadoDonador.keys()))
         self.box_estado.grid(row=5, column=1, pady=10)
@@ -186,7 +191,6 @@ class FormularioDonador(FormularioBase):
         elif self.box_tipo.get() == "Tejido":
             opciones_dict["elemento"] = self.obtener_opciones("tejidos", "nombre")
 
-        # Asignación de valores con IDs correspondientes
         nombre = self.entry_nombre.get()
         apellido = self.entry_apellido.get()
         dni = self.entry_dni.get()
@@ -210,7 +214,7 @@ class FormularioDonador(FormularioBase):
         """
         parameters = (nombre, apellido, dni, edad, genero, telefono, provincia, estado, institucion, tipo, elemento)
         self.run_query(query, parameters)
-        self.limpiar_formulario()
+
         self.destroy()
         print("Datos guardados.")
 
@@ -237,7 +241,6 @@ class FormularioReceptor(FormularioBase):
         elif self.box_tipo.get() == "Tejido":
             opciones_dict["elemento"] = self.obtener_opciones("tejidos", "nombre")
 
-        # Asignación de valores con IDs correspondientes
         nombre = self.entry_nombre.get()
         apellido = self.entry_apellido.get()
         dni = self.entry_dni.get()
