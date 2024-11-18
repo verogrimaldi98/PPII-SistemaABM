@@ -39,16 +39,17 @@ class FormularioBase(customtkinter.CTkToplevel):
 
         # ----- FRAME BOTONES -----
         self.btn_frame = customtkinter.CTkFrame(self, fg_color="transparent")
-        self.btn_frame.grid(row=6, column=0, columnspan=2, padx=60, pady=(20, 10), sticky="nsew")
+        self.btn_frame.grid(row=6, column=0, columnspan=2, padx=60, pady=(10, 10), sticky="nsew")
         self.btn_frame.grid_columnconfigure(0, weight=1)
         self.btn_frame.grid_columnconfigure(1, weight=1)
+        self.btn_frame.grid_columnconfigure(2, weight=1)
 
         trash_icon = customtkinter.CTkImage(Image.open("img/delete-icon.png"), size=(25, 25))
-        self.btn_limpiar = customtkinter.CTkButton(self.btn_frame, text="", image=trash_icon, fg_color="transparent", hover=False, width=25, command=self.limpiar_formulario)
-        self.btn_limpiar.grid(row=0, column=0)
+        self.btn_limpiar = customtkinter.CTkButton(self.btn_frame, text="", image=trash_icon, fg_color="transparent", hover=False, width=20, command=self.limpiar_formulario)
+        self.btn_limpiar.grid(row=0, column=0, padx=(0, 5))
 
         self.btn_guardar = customtkinter.CTkButton(self.btn_frame, text="Guardar", fg_color="#05ab08", hover_color="#09820d", command=self.guardar_datos)
-        self.btn_guardar.grid(row=0, column=1, padx=(0, 5))
+        self.btn_guardar.grid(row=0, column=1, padx=5)
         self.btn_cancelar = customtkinter.CTkButton(self.btn_frame, text="Cancelar", command=self.destroy)
         self.btn_cancelar.grid(row=0, column=2, padx=(5, 0))
 
