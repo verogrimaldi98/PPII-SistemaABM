@@ -1,13 +1,12 @@
 import customtkinter
-from tkinter import *
-import sqlite3
 from index import User
 from PIL import Image
+import sqlite3
+
+db_name = 'database.db'
 
 class FormularioBase(customtkinter.CTkToplevel):
-    db_name = 'database.db'
-    
-    def __init__(self, parent, titulo):
+    def __init__(self, parent, titulo, valores_iniciales=None):
         super().__init__(parent)
         
         self.title("Nuevo registro")
@@ -18,8 +17,10 @@ class FormularioBase(customtkinter.CTkToplevel):
         self.focus_set()
         self.grid_columnconfigure(0, weight=1)
 
-        self.configurar_frames()
+        self.valores_iniciales = valores_iniciales or {}
 
+        self.configurar_frames()
+        self.rellenar_formulario()
     def configurar_frames(self):
         # ----- FRAME TITULO -----
         self.title_frame = customtkinter.CTkFrame(self)
@@ -52,6 +53,7 @@ class FormularioBase(customtkinter.CTkToplevel):
         self.btn_cancelar.grid(row=0, column=2, padx=(5, 0))
 
     def guardar_datos(self):
+
         raise NotImplementedError("Subclases deben implementar el método de guardado")
 
     def crear_entradas_formulario(self, vcmd):
@@ -81,7 +83,7 @@ class FormularioBase(customtkinter.CTkToplevel):
         opciones_genero = self.obtener_opciones("generos", "nombre")
         self.label_genero = customtkinter.CTkLabel(self.frame_formulario, text="Genero:")
         self.label_genero.grid(row=3, column=0, pady=10)
-        self.box_genero = customtkinter.CTkComboBox(self.frame_formulario, values=list(opciones_genero.keys()))
+        self.box_genero = customtkinter.CTkComboBox(self.frame_formulario, values=list(opciones_genero.keys()), state="readonly")
         self.box_genero.grid(row=3, column=1, pady=10)
         self.box_genero.set("Seleccionar")
 
@@ -94,14 +96,14 @@ class FormularioBase(customtkinter.CTkToplevel):
         opciones_provincia = self.obtener_opciones("provincias", "nombre")
         self.label_provincia = customtkinter.CTkLabel(self.frame_formulario, text="Provincia:")
         self.label_provincia.grid(row=4, column=0, pady=0)
-        self.box_provincia = customtkinter.CTkComboBox(self.frame_formulario, values=list(opciones_provincia.keys()))
+        self.box_provincia = customtkinter.CTkComboBox(self.frame_formulario, values=list(opciones_provincia.keys()), state="readonly")
         self.box_provincia.grid(row=4, column=1)
         self.box_provincia.set("Seleccionar")
 
         opciones_institucion = self.obtener_opciones("instituciones", "nombre")
         self.label_institucion = customtkinter.CTkLabel(self.frame_formulario, text="Instituto:")
         self.label_institucion.grid(row=4, column=2, padx=(20, 10), pady=0)
-        self.box_institucion = customtkinter.CTkComboBox(self.frame_formulario, values=list(opciones_institucion.keys()))
+        self.box_institucion = customtkinter.CTkComboBox(self.frame_formulario, values=list(opciones_institucion.keys()), state="readonly")
         self.box_institucion.grid(row=4, column=3, padx=(0, 20))
         self.box_institucion.set("Seleccionar")
 
@@ -109,7 +111,7 @@ class FormularioBase(customtkinter.CTkToplevel):
         opciones_tipo = self.obtener_opciones("tipo", "nombre")
         self.label_tipo = customtkinter.CTkLabel(self.frame_formulario, text="Tipo:")
         self.label_tipo.grid(row=6, column=0, padx=(20, 10), pady=(0, 10))
-        self.box_tipo = customtkinter.CTkComboBox(self.frame_formulario, values=list(opciones_tipo.keys()), command=self.elegir_tipo)
+        self.box_tipo = customtkinter.CTkComboBox(self.frame_formulario, values=list(opciones_tipo.keys()), state="readonly", command=self.elegir_tipo)
         self.box_tipo.grid(row=6, column=1, pady=(0, 10))
         self.box_tipo.set("Seleccionar")
 
@@ -133,7 +135,7 @@ class FormularioBase(customtkinter.CTkToplevel):
             self.label_elemento = customtkinter.CTkLabel(self.frame_formulario, text="Elem:")
             self.label_elemento.grid(row=6, column=2, padx=(20, 10), pady=(0, 10))
 
-            self.box_elemento = customtkinter.CTkComboBox(self.frame_formulario, values=list(opciones.keys()))
+            self.box_elemento = customtkinter.CTkComboBox(self.frame_formulario, values=list(opciones.keys()), state="readonly")
             self.box_elemento.grid(row=6, column=3, padx=(0, 20), pady=(0, 10))
             self.box_elemento.set("Seleccionar")
 
@@ -149,7 +151,7 @@ class FormularioBase(customtkinter.CTkToplevel):
         return texto.isdigit() or texto == ""
 
     def run_query(self, query, parameters = ()):
-        with sqlite3.connect(self.db_name) as conn:
+        with sqlite3.connect(db_name) as conn:
             cursor = conn.cursor()
             result = cursor.execute(query, parameters)
             conn.commit()
@@ -168,15 +170,45 @@ class FormularioBase(customtkinter.CTkToplevel):
         self.box_tipo.set("Seleccionar")
         self.box_elemento.set("Seleccionar")
 
-class FormularioDonador(FormularioBase):
-    def __init__(self, parent):
-        super().__init__(parent, "Agregar Donador")
-        self.btn_guardar.configure(command=self.guardar_donantes)
+    def rellenar_formulario(self):
+        if "nombre" in self.valores_iniciales:
+            self.entry_nombre.insert(0, self.valores_iniciales["nombre"])
+        if "apellido" in self.valores_iniciales:
+            self.entry_apellido.insert(0, self.valores_iniciales["apellido"])
+        if "dni" in self.valores_iniciales:
+            self.entry_dni.insert(0, self.valores_iniciales["dni"])
+        if "edad" in self.valores_iniciales:
+            self.entry_edad.insert(0, self.valores_iniciales["edad"])
+        if "telefono" in self.valores_iniciales:
+            self.entry_telefono.insert(0, self.valores_iniciales["telefono"])
+        if "genero_id" in self.valores_iniciales:
+            self.box_genero.set(self.valores_iniciales["genero_id"])
+        if "provincia_id" in self.valores_iniciales:
+            self.box_provincia.set(self.valores_iniciales["provincia_id"])
+        if "estado_id" in self.valores_iniciales:
+            self.box_estado.set(self.valores_iniciales["estado_id"])
+        if "institucion_id" in self.valores_iniciales:
+            self.box_institucion.set(self.valores_iniciales["institucion_id"])
+        if "tipo_id" in self.valores_iniciales:
+            self.box_tipo.set(self.valores_iniciales["tipo_id"])
+        if "elemento_id" in self.valores_iniciales:
+            self.box_elemento.set(self.valores_iniciales["elemento_id"])
 
+class FormularioDonador(FormularioBase):
+    def __init__(self, parent, valores_iniciales=None):
+        super().__init__(parent, "Agregar Donador", valores_iniciales)
+        self.btn_guardar.configure(command=self.guardar_donantes)
+        
         self.opciones_estadoDonador = self.obtener_opciones("estadoDonadores", "nombre")
-        self.box_estado = customtkinter.CTkComboBox(self.frame_formulario, values=list(self.opciones_estadoDonador.keys()))
+        self.box_estado = customtkinter.CTkComboBox(self.frame_formulario, values=list(self.opciones_estadoDonador.keys()), state="readonly")
         self.box_estado.grid(row=5, column=1, pady=10)
         self.box_estado.set("Seleccionar")
+        
+        self.label_elemento = customtkinter.CTkLabel(self.frame_formulario, text="Elem:")
+        self.label_elemento.grid(row=6, column=2, padx=(20, 10), pady=(0, 10))
+        self.box_elemento = customtkinter.CTkComboBox(self.frame_formulario, values=[], state="readonly")
+        self.box_elemento.grid(row=6, column=3, padx=(0, 20), pady=(0, 10))
+        self.box_elemento.set("Seleccionar")
 
     def guardar_donantes(self):
         opciones_dict = {
@@ -214,19 +246,24 @@ class FormularioDonador(FormularioBase):
         """
         parameters = (nombre, apellido, dni, edad, genero, telefono, provincia, estado, institucion, tipo, elemento)
         self.run_query(query, parameters)
-
         self.destroy()
         print("Datos guardados.")
 
 class FormularioReceptor(FormularioBase):
-    def __init__(self, parent):
-        super().__init__(parent, "Agregar Receptor")
+    def __init__(self, parent, valores_iniciales=None):
+        super().__init__(parent, "Agregar Receptor", valores_iniciales)
         self.btn_guardar.configure(command=self.guardar_receptores)
 
         self.opciones_estadoReceptor = self.obtener_opciones("estadoReceptores", "nombre")
-        self.box_estado = customtkinter.CTkComboBox(self.frame_formulario, values=list(self.opciones_estadoReceptor.keys()))
+        self.box_estado = customtkinter.CTkComboBox(self.frame_formulario, values=list(self.opciones_estadoReceptor.keys()), state="readonly")
         self.box_estado.grid(row=5, column=1, pady=10)
         self.box_estado.set("Seleccionar")
+
+        self.label_elemento = customtkinter.CTkLabel(self.frame_formulario, text="Elem:")
+        self.label_elemento.grid(row=6, column=2, padx=(20, 10), pady=(0, 10))
+        self.box_elemento = customtkinter.CTkComboBox(self.frame_formulario, values=[], state="readonly")
+        self.box_elemento.grid(row=6, column=3, padx=(0, 20), pady=(0, 10))
+        self.box_elemento.set("Seleccionar")
 
     def guardar_receptores(self):
         opciones_dict = {
